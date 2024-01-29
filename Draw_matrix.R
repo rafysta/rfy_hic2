@@ -26,7 +26,7 @@ option_list <- list(
   make_option(c("--corScore"), default=FALSE, help="if TRUE, calculate correlation score"),
   make_option(c("--linerColor"), default=FALSE, help="use linear color scale"),
   make_option(c("--min"), default="NULL", help="minimum score for drawing"),
-  make_option(c("--max"), default="NULL", help="maximu score for drawing"),
+  make_option(c("--max"), default="0.95", help="maximu score for drawing"),
   make_option(c("--width"), default="500", help="width of output figure"),
   make_option(c("--height"), default="NULL", help="height of output figure"),
   make_option(c("--linev_chr"), default="NULL", help="location of vertical line"),
