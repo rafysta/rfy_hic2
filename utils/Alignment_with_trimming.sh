@@ -1,14 +1,12 @@
 #!/bin/bash
 
-if hash module 2>/dev/null; then
-	module load bowtie2/2.4.4
-	module load samtools
-fi
-
 DIR_LIB=$(dirname $0)
 PROGRAM_CIGAR=${DIR_LIB}/CigarFilter.pl
 VERBOSE=${VERBOSE:-FALSE}
 DEBUG=${DEBUG:-FALSE}
+
+[ ! -e ${DIR_tmporary} ] && mkdir -p ${DIR_tmporary}
+
 if [ $DEBUG == "TRUE" ]; then
 	VERBOSE=TRUE
 	DIR_tmp=${DIR_tmporary}
