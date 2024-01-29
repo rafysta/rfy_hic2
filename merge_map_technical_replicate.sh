@@ -14,8 +14,8 @@ Description
 	-v, --version
 		show version
 
-	-x, --ref [ex. hg19]
-		organism name
+	--arg [setting file]
+		parameter setting file
 		
 	-i, --in [map files]
 		map files. Separated with ,. Map files could be gziped
@@ -35,11 +35,11 @@ EOF
 }
 
 get_version(){
-	echo "sh ${0} version 1.0"
+	echo "sh ${0} version 2.0"
 }
 
-SHORT=hvi:d:n:x:t:
-LONG=help,version,in:,directory:,name:,ref:,threshold:
+SHORT=hvi:d:n:t:
+LONG=help,version,arg:,in:,directory:,name:,threshold:
 PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
 if [[ $? -ne 0 ]]; then
 	exit 2
@@ -55,6 +55,10 @@ while true; do
 		-v|--version)
 			get_version
 			exit 1
+			;;
+		--arg)
+			FILE_ARG="$2"
+			shift 2
 			;;
 		-i|--in)
 			FILE_IN="$2"
@@ -90,19 +94,19 @@ done
 DIR_LIB=$(dirname $0)
 TIME_STAMP=$(date +"%Y-%m-%d")
 
+#-----------------------------------------------
+# Load setting
+#-----------------------------------------------
+[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_IN}" ] && echo "Please specify map files for technical replicates for merging" && exit 1
-[ ! -n "${REF}" ] && echo "Please specify ref" && exit 1
 THRESHOLD_SELF=${THRESHOLD_SELF:-10000}
 
 
 cd ${DIR_DATA}
 
-#-----------------------------------------------
-# Load setting
-#-----------------------------------------------
-source ${DIR_LIB}/utils/load_setting.sh -x $REF -r NA
 
 
 #-----------------------------------------------
@@ -125,7 +129,7 @@ fi
 #-----------------------------------------------
 # Register to database
 #-----------------------------------------------
-Rscript --vanilla --slave ${DIR_LIB}/utils/file2database_large.R -i ${NAME}.map --db ${NAME}.db --table map
+Rscript --vanilla --no-echo ${DIR_LIB}/utils/file2database_large.R -i ${NAME}.map --db ${NAME}.db --table map
 gzip ${NAME}.map
 
 #-----------------------------------------------
