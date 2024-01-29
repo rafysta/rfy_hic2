@@ -13,6 +13,9 @@ Description
 	-v, --version
 		show version
 
+	--env_check
+		check environment is correctly setting
+
 	--arg [setting file]
 		parameter setting file
 
@@ -28,8 +31,17 @@ get_version(){
 	EOF
 }
 
+do_envcheck(){
+	command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or pathを通してください。"
+	command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or pathを通してください。"
+	command -v Rscript >/dev/null 2>&1 || echo "R is not available. Please install it or pathを通してください。"
+	command -v gzip >/dev/null 2>&1 || echo "gzip is not available. Please install it or pathを通してください。"
+	command -v sqlite3 >/dev/null 2>&1 || echo "sqlite3 is not available. Please install it or pathを通してください。"
+	command -v fastqc >/dev/null 2>&1 || echo "fastqc is not available. もしQCを行う場合は、install it or pathを通してください。"
+}
+
 SHORT=hv
-LONG=help,version,arg:,stages:
+LONG=help,version,env_check,arg:,stages:
 PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
 if [[ $? -ne 0 ]]; then
 	exit 2
@@ -44,6 +56,10 @@ while true; do
 			;;
 		-v|--version)
 			get_version
+			exit 1
+			;;
+		--env_check)
+			do_envcheck
 			exit 1
 			;;
 		--arg)
@@ -81,24 +97,34 @@ source $FILE_ARG
 # Run steps
 #-----------------------------------------------
 if [[ "${RUN_STAGES}" == *"1"* ]]; then
+	echo "Start step1 ..."
 	sh ${DIR_LIB}/1_configure_index_file.sh --arg $FILE_ARG
+	echo "Finished step1"
 fi
 
 if [[ "${RUN_STAGES}" == *"2"* ]]; then
+	echo "Start step2 ..."
 	sh ${DIR_LIB}/2_make_map_file.sh --arg $FILE_ARG
+	echo "Finished step2"
 fi
 
 if [[ "${RUN_STAGES}" == *"3"* ]]; then
+	echo "Start step3 ..."
 	sh ${DIR_LIB}/3_make_fragment_db.sh --arg $FILE_ARG
+	echo "Finished step3"
 fi
 
 if [[ "${RUN_STAGES}" == *"4"* ]]; then
+	echo "Start step4 ..."
 	sh ${DIR_LIB}/4_read_filtering_summary.sh --arg $FILE_ARG ${NAME}
+	echo "Finished step4"
 fi
 
 if [[ "${RUN_STAGES}" == *"5"* ]]; then
-	for RESOLUTION in "${RESOLUTIONs}"
+	echo "Start step5 ..."
+	for RESOLUTION in ${RESOLUTIONs}
 	do
 		sh ${DIR_LIB}/5_matrix_generation.sh --arg $FILE_ARG --resolution ${RESOLUTION}
 	done
+	echo "Finished step5"
 fi
