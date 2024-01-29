@@ -122,6 +122,9 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 [ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
 
+command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or pathを通してください。"
+command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or pathを通してください。"
+
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_fastq1}" ] && echo "Please specify fastq file1" && exit 1
