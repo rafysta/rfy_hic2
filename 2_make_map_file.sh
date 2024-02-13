@@ -46,7 +46,7 @@ EOF
 }
 
 get_version(){
-	echo "sh ${0} version 2.0"
+	echo bash ${0} version 2.0"
 }
 
 SHORT=hvd:n:t:q:
@@ -141,11 +141,11 @@ cd ${DIR_DATA}
 #-----------------------------------------------
 export BOWTIE2_INDEX DIR_DATA VERBOSE
 export FILE_fastq=${FILE_fastq1} OUT=${NAME}_1 DIR_tmporary=${DIR_tmporary}
-sh ${DIR_LIB}/utils/Alignment_with_trimming.sh
+bash ${DIR_LIB}/utils/Alignment_with_trimming.sh
 [ $? -ne 0 ] && exit 1
 
 export FILE_fastq=${FILE_fastq2} OUT=${NAME}_2 DIR_tmporary=${DIR_tmporary}
-sh ${DIR_LIB}/utils/Alignment_with_trimming.sh
+bash ${DIR_LIB}/utils/Alignment_with_trimming.sh
 [ $? -ne 0 ] && exit 1
 
 #-----------------------------------------------
@@ -174,7 +174,7 @@ perl ${DIR_LIB}/utils/Assign_nearest_enzymeSites.pl -a ${NAME}_1.sam -b ${NAME}_
 # entire chromosome were roughly split to 100 and split map file based 
 perl ${DIR_LIB}/utils/Split_MapFile.pl -i ${NAME}.map -l ${CHROM_LENGTH} -o ${NAME}_list.txt
 [ $? -ne 0 ] && echo "Split mapfile was failed" && exit 1
-cat ${NAME}_list.txt | xargs -P12 -I@ sh -c "sort -k2,2 -k3,3n -k9,9 -k10,10n @ | awk -v OFS='\t' '{print \$0,\$2,\$3,\$9,\$10}' | uniq -f 15 | cut -f1-15 > @_sorted && mv @_sorted @"
+cat ${NAME}_list.txt | xargs -P12 -I@ bash -c "sort -k2,2 -k3,3n -k9,9 -k10,10n @ | awk -v OFS='\t' '{print \$0,\$2,\$3,\$9,\$10}' | uniq -f 15 | cut -f1-15 > @_sorted && mv @_sorted @"
 echo "id,chr1,position1,direction1,mapQ1,restNum1,restLoc1,uniq1,chr2,position2,direction2,mapQ2,restNum2,restLoc2,uniq2" | tr ',' '\t' > ${NAME}.map
 cat $(cat ${NAME}_list.txt) >> ${NAME}.map
 rm $(cat ${NAME}_list.txt) ${NAME}_list.txt
@@ -192,7 +192,7 @@ fi
 # Summarize read filtering
 #-----------------------------------------------
 export DIR_DATA SAMPLE=${NAME} THRESHOLD_SELF=${THRESHOLD_SELF}
-sh ${DIR_LIB}/utils/Count_reads.sh > ${NAME}_read_filtering.log
+bash ${DIR_LIB}/utils/Count_reads.sh > ${NAME}_read_filtering.log
 
 
 

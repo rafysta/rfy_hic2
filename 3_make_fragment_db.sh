@@ -131,7 +131,7 @@ fi
 # Split map files after filtering
 #-----------------------------------------------
 perl ${DIR_LIB}/utils/Split_database.pl -l ${CHROM_LENGTH} -o ${NAME}_list.txt -m ${MAPQ_THRESHOLD} -e ${FILE_enzyme_def} -i ${FILE_MAPs} -t ${THRESHOLD_SELF}
-cat ${NAME}_list.txt | xargs -P12 -I@ sh -c "sort -k1,1 -k2,2n -k5,5 -k6,6n @ | uniq -c | awk -v OFS='\t' '{print \$2,\$3,\$4,\$5,\$6,\$7,\$8,\$9,\$1}' > @_counted && mv @_counted @"
+cat ${NAME}_list.txt | xargs -P12 -I@ bash -c "sort -k1,1 -k2,2n -k5,5 -k6,6n @ | uniq -c | awk -v OFS='\t' '{print \$2,\$3,\$4,\$5,\$6,\$7,\$8,\$9,\$1}' > @_counted && mv @_counted @"
 echo "chr1,start1,end1,fragNum1,chr2,start2,end2,fragNum2,score" | tr ',' '\t' > ${NAME}_fragment_pair.txt
 cat $(cat ${NAME}_list.txt) >> ${NAME}_fragment_pair.txt
 rm $(cat ${NAME}_list.txt) ${NAME}_list.txt
@@ -142,7 +142,7 @@ gzip ${NAME}_fragment_pair.txt
 #-----------------------------------------------
 # Distance curve
 #-----------------------------------------------
-sh ${DIR_LIB}/utils/Distance_curve.sh -i ${NAME}.map.gz -o ${NAME}_distance.txt
+bash ${DIR_LIB}/utils/Distance_curve.sh -i ${NAME}.map.gz -o ${NAME}_distance.txt
 
 #-----------------------------------------------
 # Fragment property
