@@ -32,12 +32,12 @@ get_version(){
 }
 
 do_envcheck(){
-	command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or set the path" && echo "bowtie2 path is OK"
-	command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or set the path" && echo "samtools path is OK"
-	command -v Rscript >/dev/null 2>&1 || echo "R is not available. Please install it or set the path" && echo "R path is OK"
-	command -v gzip >/dev/null 2>&1 || echo "gzip is not available. Please install it or set the path" && echo "gzip path is OK"
-	command -v sqlite3 >/dev/null 2>&1 || echo "sqlite3 is not available. Please install it or set the path" && echo "sqlite3 path is OK"
-	command -v fastqc >/dev/null 2>&1 || echo "fastqc is not available. If you want to use fastqc please install it or set the path" && echo "fastqc path is OK"
+	command -v bowtie2 >/dev/null 2>&1 && { echo "bowtie2 path is OK"; } || { echo "bowtie2 command is not available. Please install it or set the path"; }
+	command -v samtools >/dev/null 2>&1 && { echo "samtools path is OK"; } || { echo "samtools command is not available. Please install it or set the path"; }
+	command -v Rscript >/dev/null 2>&1 && { echo "R path is OK"; } || { echo "R is not available. Please install it or set the path"; }
+	command -v gzip >/dev/null 2>&1 && { echo "gzip path is OK"; } || { echo "gzip is not available. Please install it or set the path"; }
+	command -v sqlite3 >/dev/null 2>&1 && { echo "sqlite3 path is OK"; } || { echo "sqlite3 is not available. Please install it or set the path"; }
+	command -v fastqc >/dev/null 2>&1 && { echo "fastqc path is OK"; } || { echo "fastqc is not available. If you want to use fastqc please install it or set the path"; }
 }
 
 SHORT=hv
