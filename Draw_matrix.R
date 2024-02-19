@@ -1,4 +1,4 @@
-# contact mapを描画する
+# Draw contact map
 
 suppressPackageStartupMessages(library("optparse"))
 option_list <- list(  
@@ -108,7 +108,7 @@ if(Normalization == "average"){
 }
 
 if(eval(parse(text=as.character(opt["corScore"])))){
-  # Observed / Expectのmatrixに変換する
+  # Convert to observed / expected matrix
   map_expect <- map
   NUM_LINE <- nrow(map)
   for(d in 0:(NUM_LINE-1)){
@@ -124,7 +124,7 @@ if(eval(parse(text=as.character(opt["corScore"])))){
   map <- ifelse(map_expect == 0, NA, map / map_expect)
   rm(map_expect)
   
-  # もしsdが0だったらNAにする
+  # If SD = 0, fill in 0
   sdlist <- apply(map,1,sd, na.rm=TRUE)
   index <- which(sdlist == 0)
   map[index, ] <- NA
@@ -137,7 +137,7 @@ if(eval(parse(text=as.character(opt["corScore"])))){
 }
 
 if(eval(parse(text=as.character(opt["distance"])))){
-  # Observed / Expectのmatrixに変換する
+  # Convert to observed / expected matrix
   map_expect <- map
   NUM_LINE <- nrow(map)
   for(d in 0:(NUM_LINE-1)){
@@ -329,7 +329,7 @@ if(as.character(opt["unit"]) == "p"){
 }
 
 
-# replace Na
+# Replace Na
 if(as.character(opt["na"]) == "min"){
   MinValue <- min(map.extract, na.rm=TRUE)
   map.extract <- ifelse(is.na(map.extract), MinValue, map.extract)
@@ -353,7 +353,7 @@ if(as.character(opt["na"]) == "min"){
   }
 }
 
-# replace 0
+# Replace 0
 if(as.character(opt["zero"]) == "min"){
   tmp <- map.extract[map.extract != 0]
   MinValue <- min(tmp, na.rm=TRUE)
@@ -379,7 +379,7 @@ if(as.character(opt["matrix"]) != "NULL"){
 map.conv <- TakeMiddleV(map.extract, Min, Max)
 
 
-### 半分しか描画しない
+### Only draw half
 if(eval(parse(text=as.character(opt["triangle"])))){
   half <- lower.tri(map.conv, diag=TRUE)
   map.conv[half] <- NA
@@ -409,7 +409,7 @@ lseq <- function(from=1, to=100000, length.out=6) {
 
 
 
-# Colorの調整
+# Adjust the color
 if(eval(parse(text=opt["linerColor"]))){
   bk <- seq(Min, Max, length.out=100)
 }else{

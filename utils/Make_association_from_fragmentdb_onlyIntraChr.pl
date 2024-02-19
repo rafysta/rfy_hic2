@@ -26,7 +26,7 @@ my $THRESHOLD_SELF = $opt{t};
 my @chromosomes = split /,/, $opt{c};
 
 
-# 全データを入れる変数
+# Variable to contain all data
 my %data;
 
 #---------------------------------------

@@ -20,13 +20,13 @@ Description
 		genome's fasta sequence file
 
 	-t, --restriction [nucleotide sequence of restriction site(s). For multiple restrictions, separated by , ex: GATC,GAATC,GATTC,GAGTC,GACTC]
-		制限酵素部位の認識配列
+		Restriction enzyme recognition sequence(s)
 
-	--out_site [制限酵素の切断部位のリストファイルの出力ファイル名]
-		制限酵素の切断部位のリストファイルの出力ファイル名
+	--out_site [Output filename of restriction enzyme site coordinates]
+		Output filename of restriction enzyme site coordinates
 	
-	--out_site_index [制限酵素の切断部位をsearchするためのハッシュファイル]
-		制限酵素の切断部位をsearchするためのハッシュファイル
+	--out_site_index [Path for output hash file for searching restriction enzyme site]
+		Path for output hash file for searching restriction enzyme site
 	EOF
 
 }
