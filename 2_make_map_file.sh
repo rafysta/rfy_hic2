@@ -40,7 +40,7 @@ Description
 		directory to store temporary file. (default /tmp)
 
 	--verbose
-		Output bowtie2 trimming alingment log
+		Output bowtie2 trimming alignment log
 EOF
 
 }
