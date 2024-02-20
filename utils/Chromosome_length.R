@@ -1,6 +1,8 @@
 #!/usr/bin/Rscript
 # Load length of chromosome
 
+suppressWarnings(suppressMessages(library(data.table)))
+
 suppressPackageStartupMessages(library("optparse"))
 option_list <- list(  
   make_option(c("-i", "--in"), default="NA", help="length file"),
@@ -10,10 +12,10 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 
 FILE_in <- as.character(opt["in"])
-D_table <- read.table(FILE_in, header=FALSE, sep="\t", stringsAsFactors = FALSE, quote = "", col.names = c("chr", "length"), row.names = 1)
+D_table <- as.data.frame(fread(FILE_in, select = c(1,2), header = FALSE, col.names = c("chr", "length")))
+rownames(D_table) <- D_table$chr
 
-
-TARGET_CHRs <- rownames(D_table)
+TARGET_CHRs <- D_table$chr
 CHR_in <- unlist(strsplit(as.character(opt["include"]), ","))
 if(CHR_in[1] != "NA"){
   TARGET_CHRs <- CHR_in
