@@ -1,5 +1,5 @@
 #!/bin/bash
-# make fragment database
+# Make fragment database
 
 get_usage(){
 	cat <<EOF

@@ -40,7 +40,7 @@ Description
 		directory to store temporary file. (default /tmp)
 
 	--verbose
-		Output bowtie2 trimming alingment log
+		Output bowtie2 trimming alignment log
 EOF
 
 }
@@ -122,8 +122,8 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 [ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
 
-command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or pathを通してください。"
-command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or pathを通してください。"
+command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or add its path to the $PATH environment variable."
+command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or add its path to the $PATH environment variable."
 
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
