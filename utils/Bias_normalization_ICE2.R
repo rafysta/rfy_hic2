@@ -44,7 +44,7 @@ if(Threshold > 10){
 }else{
   index_remove <- which(SUM_bin < quantile(SUM_bin[SUM_bin > 0],prob=Threshold))   # # considered threshold as %
   
-  ### consider how much % of bins are zero (Varianceがおかしいことがあったので辞める)
+  ### consider how much % of bins are zero (Gave up since variance may become strange)
   # index_remove <- which(sum(SUM_bin > 0) < (length(SUM_bin) * Threshold))
   
 }
