@@ -46,7 +46,7 @@ EOF
 }
 
 get_version(){
-	echo bash ${0} version 2.0"
+	echo "bash ${0} version 2.0"
 }
 
 SHORT=hvd:n:t:q:
