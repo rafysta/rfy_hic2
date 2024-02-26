@@ -12,7 +12,7 @@ option_list <- list(
   make_option(c("--normalize"), default="NA", help="NA, average: average will be 1, probability: score were divided by total read"),
   make_option(c("--moving_average"), default=0, help="number of merging bin for moving average calculation"),
   make_option(c("--na"), default="min", help="how to treat na value. min, na, ave, zero. min replace with minimum value. ave take average of same distance, zero replace to zero"),
-  make_option(c("--zero"), default="min", help="how to treat 0 value. min, na, ave. min replace with minimum value. ave take average of same distance"),
+  make_option(c("--zero"), default="NA", help="how to treat 0 value. min, na, ave. min replace with minimum value. ave take average of same distance"),
   make_option(c("--matrix"), default="NULL", help="output matrix"),
   make_option(c("--start"), default="1", help="start position"),
   make_option(c("--end"), default="all", help="end position. all for end of the chromosome"),
@@ -27,7 +27,7 @@ option_list <- list(
   make_option(c("--linerColor"), default=FALSE, help="use linear color scale"),
   make_option(c("--min"), default="NULL", help="minimum score for drawing"),
   make_option(c("--max"), default="0.95", help="maximu score for drawing"),
-  make_option(c("--width"), default="500", help="width of output figure"),
+  make_option(c("--width"), default="1000", help="width of output figure"),
   make_option(c("--height"), default="NULL", help="height of output figure"),
   make_option(c("--linev_chr"), default="NULL", help="location of vertical line"),
   make_option(c("--linev_pos"), default="NULL", help="location of vertical line , separated"),
@@ -374,10 +374,7 @@ if(as.character(opt["matrix"]) != "NULL"){
   write.table(map.extract, file=as.character(opt["matrix"]), quote=FALSE, sep="\t", eol="\n", row.names=TRUE, col.names=NA)
 }
 
-
-
 map.conv <- TakeMiddleV(map.extract, Min, Max)
-
 
 ### Only draw half
 if(eval(parse(text=as.character(opt["triangle"])))){
@@ -418,7 +415,7 @@ if(eval(parse(text=opt["linerColor"]))){
   tmp <- as.numeric(map.conv)
   tmp <- tmp[!is.na(tmp)]
   T95 <- sort(tmp)[round(length(tmp)*0.95)]
-  bk <- unique(round(c(seq(Min, T95, length.out=95), lseq(T95, Max+1, length.out=5)), digits=2))
+  bk <- unique(c(seq(Min, T95, length.out=95), lseq(T95, Max+1, length.out=5)), digits=2)
 }
 
 # t <- (Max - Min) * 0.8 + Min
@@ -426,8 +423,6 @@ if(eval(parse(text=opt["linerColor"]))){
 map.cat <- matrix(as.integer(cut(map.conv, breaks = bk, include.lowest = TRUE)), nrow = nrow(map.conv))
 colors <- colorRampPalette(pallete)(length(bk))
 colors <- colors[min(map.cat, na.rm=TRUE):max(map.cat, na.rm=TRUE)]
-
-
 
 FILE_OUT <- as.character(opt["out"])
 png(file=FILE_OUT, width=width, height=height, units="px", bg="white")
