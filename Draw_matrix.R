@@ -155,7 +155,7 @@ if(eval(parse(text=as.character(opt["distance"])))){
 }
 
 if(eval(parse(text=as.character(opt["distance2"])))){
-  # log2(Observed / Expect)のmatrixに変換する
+  # Convert to log2(Observed / Expect) matrix
   map_expect <- map
   NUM_LINE <- nrow(map)
   for(d in 0:(NUM_LINE-1)){
