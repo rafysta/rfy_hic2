@@ -1,6 +1,13 @@
 # rfy_hic2
 Hi-C processing pipeline
 
+# Citation
+
+If you use `rfy_hic2` in your research, please cite the following paper:
+
+Tanizawa, H. et al. *Step-by-Step Protocol to Generate Hi-C Contact Maps Using the rfy_hic2 Pipeline*. **Methods Mol Biol** 2856, 133–155 (2025).  
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/39283450/) | [DOI: 10.1007/978-1-0716-4136-1_8](https://link.springer.com/protocol/10.1007/978-1-0716-4136-1_8)
+
 # Hardware Requirement
 This pipeline is designed for use in a Linux environment, while it can also be run in other operation systems given suitable setup. Windows users can use the pipe-line by installing the Windows Subsystem for Linux (WSL). While macOS and Linux are both UNIX-like op-eration systems, it is important to note that macOS users might encounter unex-pected command behaviors. To provide broad compatibility while acknowledging potential limitations for non-Linux operating systems.
 
