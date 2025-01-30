@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use rfy_hic2 in your research, please cite the following work."
+authors:
+  - family-names: Tanizawa
+    given-names: Hideki
+title: "Step-by-Step Protocol to Generate Hi-C Contact Maps Using the rfy_hic2 Pipeline"
+year: 2025
+journal: "Methods in Molecular Biology"
+volume: 2856
+pages: "133-155"
+doi: 10.1007/978-1-0716-4136-1_8
+url: "https://pubmed.ncbi.nlm.nih.gov/39283450/"
