@@ -89,7 +89,7 @@ tmpfile2=$(mktemp tmp.XXXXXX)
 FLAG=0
 for NAME in "$@"
 do
-	FILE_map=${NAME}_alignment.log
+	FILE_map=${DIR_DATA}/${NAME}_alignment.log
 	FILE_count=${NAME}_read_filtering.log
 
 	if [ $FLAG -eq 0 ]
