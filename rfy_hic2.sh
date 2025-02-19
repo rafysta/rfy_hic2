@@ -124,7 +124,7 @@ if [[ "${RUN_STAGES}" == *"5"* ]]; then
 	echo "Start step5 ..."
 	for RESOLUTION in ${RESOLUTIONs}
 	do
-	bash ${DIR_LIB}/5_matrix_generation.sh --arg $FILE_ARG --resolution ${RESOLUTION}
+	bash ${DIR_LIB}/5_matrix_generation.sh --arg $FILE_ARG -o ${DIR_OUT}/${RESOLUTION} --resolution ${RESOLUTION}
 	done
 	echo "Finished step5"
 fi
