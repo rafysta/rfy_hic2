@@ -94,4 +94,36 @@ bash rfy_hic2.sh --help
 ```
 allows verification of necessary parameters for command execution. 
 
+## Running stages individually (e.g. on an HPC cluster)
+
+Each stage script also accepts `--arg`, so the stages can be submitted as
+separate jobs. Values given on the command line take precedence over the
+argfile:
+```
+bash 2_make_map_file.sh --arg sample.env
+bash 3_make_fragment_db.sh --arg sample.env
+bash 5_matrix_generation.sh --arg sample.env --resolution 20kb
+bash 6_make_hic_file.sh --arg sample.env
+```
+The argfile is executed by bash, so it may contain `module load ...` lines or
+`source other.env` lines. See `examples/hpc/` for genome/enzyme setting files
+shared between projects and a SLURM submission script driven by a sample
+database.
+
+## Output: multi-resolution `.hic` file (stage 6)
+
+Stage 6 writes `DIR_DATA/NAME/NAME.hic`, a single Juicer `.hic` file that
+holds all resolutions and three normalizations:
+
+| normalization | content |
+|---|---|
+| `NONE` | identical to `<RES>/Raw/ALL.rds` at every resolution (same fragment-level filtering and bin assignment as stage 5) |
+| `ICE`  | identical to `<RES>/ICE2/ALL.rds`; the ICE2 bias vectors are stored as a normalization vector |
+| `KR` (configurable) | calculated by `juicer_tools pre` on the same counts |
+
+The file can be opened in Juicebox, [HiCarta](https://github.com/rafysta/HiCarta),
+straw, or any `.hic` reader. `utils/Verify_hic_file.R` compares the `.hic`
+content with the rds matrices. Requirements: Java and `juicer_tools.jar`
+(`PROGRAM_JUICER` in the argfile; tested with 1.22.01).
+
 

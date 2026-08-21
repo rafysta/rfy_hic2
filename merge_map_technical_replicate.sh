@@ -97,7 +97,7 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+source ${DIR_LIB}/utils/load_argfile.sh FILE_IN DIR_DATA NAME THRESHOLD_SELF
 
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1

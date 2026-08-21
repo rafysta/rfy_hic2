@@ -107,7 +107,7 @@ INPUT_FILES=$@
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA FILE_MAPs NAME MAPQ_THRESHOLD THRESHOLD_SELF FLAG_remove
 
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_MAPs}" ] && echo "Please specify input map files" && exit 1
@@ -122,7 +122,7 @@ cd ${DIR_DATA}
 # Remove all output file
 #-----------------------------------------------
 if [ $FLAG_remove = "TRUE" ]; then
-	rm ${NAME}_fragment_pair.txt.gz ${NAME}_distance.txt ${NAME}_DNA_amount.bed ${NAME}_bad_fragment.txt ${NAME}_fragment.png ${NAME}_fragment.db ${NAME}_fragment.txt ${NAME}_InterChromosome.matrix
+	rm -f ${NAME}_fragment_pair.txt.gz ${NAME}_distance.txt ${NAME}_distance_accurate.txt ${NAME}_DNA_amount.bed ${NAME}_bad_fragment.txt ${NAME}_fragment.png ${NAME}_fragment.db ${NAME}_fragment.txt ${NAME}_InterChromosome.matrix
 	exit
 fi
 
@@ -143,6 +143,8 @@ gzip ${NAME}_fragment_pair.txt
 # Distance curve
 #-----------------------------------------------
 bash ${DIR_LIB}/utils/Distance_curve.sh -i ${NAME}.map.gz -o ${NAME}_distance.txt
+# accurate version (all 4 combinations of fragment ends, from the fragment database)
+[ -n "${FILE_CHROME_LENGTH:-}" ] && [ -e "${FILE_CHROME_LENGTH}" ] && perl ${DIR_LIB}/utils/Distance_curve_accurate.pl -i ${NAME}_fragment.db -o ${NAME}_distance_accurate.txt -l ${FILE_CHROME_LENGTH}
 
 #-----------------------------------------------
 # Fragment property

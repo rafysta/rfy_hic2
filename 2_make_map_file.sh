@@ -120,7 +120,7 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA NAME FILE_fastq1 FILE_fastq2 FLAG_fastqc THRESHOLD_SELF DIR_tmporary VERBOSE
 
 command -v bowtie2 >/dev/null 2>&1 || echo "bowtie2 command is not available. Please install it or add its path to the $PATH environment variable."
 command -v samtools >/dev/null 2>&1 || echo "samtools command is not available. Please install it or add its path to the $PATH environment variable."

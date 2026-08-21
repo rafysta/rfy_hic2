@@ -20,14 +20,16 @@ Description
 		parameter setting file
 
 	--stages [default: 2345]
-		run stages
+		run stages. 1: restriction site index, 2: alignment, 3: fragment db,
+		4: summary, 5: matrices, 6: .hic file (requires juicer_tools)
+		e.g. --stages 23456
 	EOF
 
 }
 
 get_version(){
 	cat <<-EOF
-	${0} version 2.0
+	${0} version 2.1
 	EOF
 }
 
@@ -38,6 +40,9 @@ do_envcheck(){
 	command -v gzip >/dev/null 2>&1 && { echo "gzip path is OK"; } || { echo "gzip is not available. Please install it or set the path"; }
 	command -v sqlite3 >/dev/null 2>&1 && { echo "sqlite3 path is OK"; } || { echo "sqlite3 is not available. Please install it or set the path"; }
 	command -v fastqc >/dev/null 2>&1 && { echo "fastqc path is OK"; } || { echo "fastqc is not available. If you want to use fastqc please install it or set the path"; }
+	command -v perl >/dev/null 2>&1 && { echo "perl path is OK"; } || { echo "perl is not available. Please install it or set the path"; }
+	perl -MDBD::SQLite -e 1 >/dev/null 2>&1 && { echo "perl DBD::SQLite is OK"; } || { echo "perl module DBD::SQLite is not available. Please install it (e.g. cpanm DBD::SQLite or apt install libdbd-sqlite3-perl)"; }
+	command -v java >/dev/null 2>&1 && { echo "java path is OK"; } || { echo "java is not available. It is required only for stage 6 (.hic file)"; }
 }
 
 SHORT=hv
@@ -85,13 +90,16 @@ DIR_LIB=$(dirname $0)
 TIME_STAMP=$(date +"%Y-%m-%d_%H.%M.%S")
 INPUT_FILES=$@
 
-[ ! -n "${FILE_ARG}" ] && echo "Please specify parameter setting file" && exit 1
+[ ! -n "${FILE_ARG:-}" ] && echo "Please specify parameter setting file" && exit 1
 RUN_STAGES=${RUN_STAGES:-2345}
 
 #-----------------------------------------------
 # Load setting file
 #-----------------------------------------------
+set -a
 source $FILE_ARG
+set +a
+DIR_OUT=${DIR_OUT:-"${DIR_DATA}/${NAME}"}
 
 #-----------------------------------------------
 # Run steps
@@ -127,4 +135,10 @@ if [[ "${RUN_STAGES}" == *"5"* ]]; then
 	bash ${DIR_LIB}/5_matrix_generation.sh --arg $FILE_ARG -o ${DIR_OUT}/${RESOLUTION} --resolution ${RESOLUTION}
 	done
 	echo "Finished step5"
+fi
+
+if [[ "${RUN_STAGES}" == *"6"* ]]; then
+	echo "Start step6 ..."
+	bash ${DIR_LIB}/6_make_hic_file.sh --arg $FILE_ARG
+	echo "Finished step6"
 fi

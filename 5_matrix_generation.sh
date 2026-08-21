@@ -53,6 +53,10 @@ Description
 		threshold to remove different direction reads to remove potential self ligation. (default 10kb)
 		We use 2kb for 3 restriction enzyme Hi-C
 
+	--ice_threshold [default: 0.02]
+		threshold for ICE normalization. Bins whose total count is below this
+		quantile (if < 10) or below this count (if >= 10) are excluded.
+
 	--max_distance [maximum distance]
 		maximum distance of output.
 EOF
@@ -64,7 +68,7 @@ get_version(){
 }
 
 SHORT=hvd:o:n:r:f:e:c:t:
-LONG=help,version,arg:,directory:,out:,name:,include:,exclude:,resolution:,fragment:,intra:,normalization:,raw:,use_blacklist:,threshold:,max_distance:
+LONG=help,version,arg:,directory:,out:,name:,include:,exclude:,resolution:,fragment:,intra:,normalization:,raw:,use_blacklist:,threshold:,ice_threshold:,max_distance:
 PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
 if [[ $? -ne 0 ]]; then
 	exit 2
@@ -139,6 +143,10 @@ while true; do
 			THRESHOLD_SELF="$2"
 			shift 2
 			;;
+		--ice_threshold)
+			THRESHOLD_ICE="$2"
+			shift 2
+			;;
 		--max_distance)
 			FLAG_dataframe="TRUE"
 			THRESHOLD_MAX_DISTANCE="$2"
@@ -158,7 +166,8 @@ done
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+DIR_LIB=$(dirname $0)
+source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA DIR_OUT NAME CHR_include CHR_exclude RESOLUTION_string RESOLUTION FLAG_fragment FLAG_INTRA FLAG_NORM FLAG_RAW FLAG_blacklist THRESHOLD_SELF THRESHOLD_MAX_DISTANCE FLAG_dataframe THRESHOLD_ICE
 
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${RESOLUTION}" ] && echo "Please specify resolution" && exit 1
@@ -173,13 +182,13 @@ CHR_exclude=${CHR_exclude:-NA}
 FLAG_dataframe=${FLAG_dataframe:-FALSE}
 [ "$FLAG_dataframe" = "TRUE" ] && [ ! -n "$THRESHOLD_MAX_DISTANCE" ] && echo "If output as dataframe format, please specify maximum distance" && exit 1
 THRESHOLD_SELF=${THRESHOLD_SELF:-10000}
+THRESHOLD_ICE=${THRESHOLD_ICE:-0.02}
 DIR_OUT=${DIR_OUT:-"${DIR_DATA}/${NAME}/${RESOLUTION_string}"}
 FLAG_fragment=${FLAG_fragment:-"FALSE"}
 
 [ ! -e ${DIR_OUT} ] && mkdir -p ${DIR_OUT}
 
 
-DIR_LIB=$(dirname $0)
 
 #-----------------------------------------------
 # Load chromosome length
@@ -285,10 +294,10 @@ if [ $FLAG_NORM = "TRUE" ]; then
 		do
 			let index=i-1
 			CHR=${CHRs[index]}
-			[ ! -e ${DIR_OUT}/ICE2/${CHR}.rds ] && Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_OUT}/Raw/${CHR}.matrix -o ${DIR_OUT}/ICE2/${CHR}.matrix --inter ${DIR_OUT}/InterBin/${CHR}.txt --times 30 && Rscript --no-echo --vanilla ${DIR_LIB}/utils/Convert_matrix_to_object.R -i ${DIR_OUT}/ICE2/${CHR}.matrix
+			[ ! -e ${DIR_OUT}/ICE2/${CHR}.rds ] && Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_OUT}/Raw/${CHR}.matrix -o ${DIR_OUT}/ICE2/${CHR}.matrix --inter ${DIR_OUT}/InterBin/${CHR}.txt --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_OUT}/ICE2/${CHR}_bias.txt && Rscript --no-echo --vanilla ${DIR_LIB}/utils/Convert_matrix_to_object.R -i ${DIR_OUT}/ICE2/${CHR}.matrix
 		done
 	else
-		Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_OUT}/Raw/ALL.matrix -o ${DIR_OUT}/ICE2/ALL.matrix --times 30 && Rscript --no-echo --vanilla ${DIR_LIB}/utils/Convert_matrix_to_object.R -i ${DIR_OUT}/ICE2/ALL.matrix
+		Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_OUT}/Raw/ALL.matrix -o ${DIR_OUT}/ICE2/ALL.matrix --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_OUT}/ICE2/ALL_bias.txt && Rscript --no-echo --vanilla ${DIR_LIB}/utils/Convert_matrix_to_object.R -i ${DIR_OUT}/ICE2/ALL.matrix
 	fi
 fi
 

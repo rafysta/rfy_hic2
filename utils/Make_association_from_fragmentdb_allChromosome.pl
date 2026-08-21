@@ -24,6 +24,7 @@ my $Resolution = $opt{r};
 my $FILE_black = $opt{b};
 my $THRESHOLD_SELF = $opt{t};
 my @chromosomes = split /,/, $opt{c};
+my %chrOrder; for(my $i = 0; $i < @chromosomes; $i++){ $chrOrder{$chromosomes[$i]} = $i; }
 
 # Variable to contain all data
 my %data;
@@ -113,16 +114,35 @@ while(my $ref = $sth_data->fetchrow_arrayref()){
 	$score = $score / 4;
 
 	# count data (confirmed that left is smaller)
-	$data{$id1a}{$id2a} += $score;
-	$data{$id1a}{$id2b} += $score;
-	$data{$id1b}{$id2a} += $score;
-	$data{$id1b}{$id2b} += $score;
+	# Pairs within the same fragment (id1b may be a later bin than id2a) are
+	# stored in the canonical (smaller bin first) order so that no count is lost.
+	# (v2.1: earlier versions silently dropped such counts when the fragment
+	#  spanned a bin boundary)
+	&add_pair($id1a, $id2a, $score);
+	&add_pair($id1a, $id2b, $score);
+	&add_pair($id1b, $id2a, $score);
+	&add_pair($id1b, $id2b, $score);
 
 }
 $sth_data->finish();
 $dbh->disconnect();
 
 
+
+
+#---------------------------------------
+# store a pair in canonical order (chromosome order, then bin position)
+#---------------------------------------
+sub add_pair{
+	my ($x, $y, $s) = @_;
+	my ($ca, $pa) = split /:/, $x;
+	my ($cb, $pb) = split /:/, $y;
+	if(($ca eq $cb and $pa > $pb) or ($ca ne $cb and exists $chrOrder{$ca} and exists $chrOrder{$cb} and $chrOrder{$ca} > $chrOrder{$cb})){
+		$data{$y}{$x} += $s;
+	}else{
+		$data{$x}{$y} += $s;
+	}
+}
 
 #---------------------------------------
 # output

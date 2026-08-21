@@ -9,7 +9,8 @@ option_list <- list(
   make_option(c("--times"), default="30", help="how many times apply normalization"),
   make_option(c("-t", "--threshold"), default=0.02, help="cut off threshold (default 0.02). Line with only less than this number of bin has score will remove
                 Value with 10 or more than 10 will be used as cut off threshold value"),
-  make_option(c("-q", "--quiet"), default="FALSE", help="don't output log")
+  make_option(c("-q", "--quiet"), default="FALSE", help="don't output log"),
+  make_option(c("--bias_out"), default="NA", help="output file for the bias vector. Normalized_ij = Raw_ij / (bias_i * bias_j). Removed bins are NA")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -18,6 +19,7 @@ FILE_out <- as.character(opt["out"])
 FILE_inter <- as.character(opt["inter"])
 Threshold <- as.numeric(as.character(opt["threshold"]))
 FLAG_quiet <- as.character(opt["quiet"])
+FILE_bias <- as.character(opt["bias_out"])
 
 FILE_object <- sub(".matrix", ".rds", FILE_matrix)
 if(as.character(opt["log"]) == "NA"){
@@ -103,17 +105,26 @@ multi <- function(m, times){
       cat("Variance at ", i, " times:\t", var(S$bias), "\n", sep="", file = FILE_log, append = TRUE)
     }
   }
-  m
+  list(map=m, bias=B)
 }
 
 options(warn=-1)
 TIMES_apply <- as.numeric(as.character(opt["times"]))
-map <- multi(map, TIMES_apply)
+RESULT <- multi(map, TIMES_apply)
+map <- RESULT$map
+BIAS <- RESULT$bias
+names(BIAS) <- r
+BIAS[index_remove] <- NA
 
 
 colnames(map) <- r
 rownames(map) <- r
 write.table(map, file=FILE_out, append=TRUE, quote=FALSE, sep="\t", eol="\n", row.names=TRUE, col.names=NA)
 
-
-
+#------------------------------------------------
+# Output bias vector (for .hic normalization vector etc.)
+# Raw_ij / (BIAS_i * BIAS_j) == normalized map (exactly, for bins not removed)
+#------------------------------------------------
+if(FILE_bias != "NA"){
+  write.table(data.frame(bin=r, bias=BIAS), file=FILE_bias, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+}

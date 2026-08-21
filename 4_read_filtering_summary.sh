@@ -76,7 +76,7 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA FILE_OUT
 
 [ ! -n "${DIR_DATA}" ] && echo "Please specify log file directory" && exit 1
 [ ! -n "${FILE_OUT}" ] && echo "Please specify output file name" && exit 1

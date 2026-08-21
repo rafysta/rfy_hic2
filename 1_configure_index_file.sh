@@ -89,14 +89,14 @@ done
 #-----------------------------------------------
 # Load setting
 #-----------------------------------------------
-[ ! -n "${FILE_ARG}" ] && source ${FILE_ARG}
+DIR_LIB=$(dirname $0)
+source ${DIR_LIB}/utils/load_argfile.sh FILE_fasta RECOGNITION_SITES FILE_enzyme_def FILE_enzyme_index
 
 [ ! -n "${FILE_fasta}" ] && echo "Please specify input genome fasta file" && exit 1
 [ ! -n "${RECOGNITION_SITES}" ] && echo "Please specify recognition sequences" && exit 1
 [ ! -n "${FILE_enzyme_def}" ] && echo "Please specify restriction site file" && exit 1
 [ ! -n "${FILE_enzyme_index}" ] && echo "Please specify restriction site index file" && exit 1
 
-DIR_LIB=$(dirname $0)
 
 
 #-----------------------------------------------
