@@ -247,10 +247,14 @@ trap "rm -rf ${DIR_tmp}" 0
 #-----------------------------------------------
 # Load chromosome length
 #-----------------------------------------------
-CHR_TABLE=$(Rscript --vanilla --no-echo ${DIR_LIB}/utils/Chromosome_length.R --in $FILE_CHROME_LENGTH --include $CHR_include --exclude $CHR_exclude)
+# R packages used by this stage
+Rscript --vanilla --no-echo -e 'for(p in c("optparse","data.table")) if(!requireNamespace(p, quietly=TRUE)) stop("R package not found: ", p)' || { echo "Required R packages are missing for $(command -v Rscript). Check that the intended R (with optparse, data.table) is in PATH."; exit 1; }
+
+CHR_TABLE=$(Rscript --vanilla --no-echo ${DIR_LIB}/utils/Chromosome_length.R --in $FILE_CHROME_LENGTH --include $CHR_include --exclude $CHR_exclude) || { echo "Chromosome_length.R failed"; exit 1; }
 CHRs=($(echo $CHR_TABLE | xargs -n1 | awk 'NR==1' | tr ',' ' '))
 LENGTH=($(echo $CHR_TABLE | xargs -n1 | awk 'NR==2' | tr ',' ' '))
 CHRs_list=$(echo ${CHRs[@]} | tr ' ' ',')
+[ ${#CHRs[@]} -eq 0 ] && echo "No chromosome was obtained from ${FILE_CHROME_LENGTH}" && exit 1
 
 FILE_CHROM_SIZES=${DIR_tmp}/chrom.sizes
 for i in $(seq 1 ${#CHRs[@]}); do
@@ -270,6 +274,8 @@ else
 	perl ${DIR_LIB}/utils/Make_juicer_short_from_fragmentdb.pl -i ${DIR_DATA}/${NAME}_fragment.db -o ${FILE_SHORT} -c ${CHRs_list} -t ${THRESHOLD_SELF}
 fi
 [ $? -ne 0 ] && echo "conversion to short format failed" && exit 1
+N_RECORD=$(zcat ${FILE_SHORT} | head -n 1 | wc -l)
+[ "${N_RECORD}" -eq 0 ] && echo "no record was written to the short format file (empty fragment db, wrong chromosome names, or all fragments blacklisted)" && exit 1
 echo "[$(date)] $NAME : short format created"
 
 #==============================================================
@@ -285,7 +291,10 @@ FILE_HIC_tmp=${DIR_tmp}/${NAME}.hic
 COMMAND="${COMMAND} ${FILE_SHORT} ${FILE_HIC_tmp} ${FILE_CHROM_SIZES}"
 echo ${COMMAND}
 eval ${COMMAND}
-[ ! -e ${FILE_HIC_tmp} ] && echo "juicer pre failed" && exit 1
+STATUS=$?
+[ ${STATUS} -ne 0 ] && echo "juicer pre failed (exit ${STATUS})" && exit 1
+[ ! -s ${FILE_HIC_tmp} ] && echo "juicer pre failed (no output)" && exit 1
+java -Xmx${JAVA_MEM} -jar ${PROGRAM_JUICER} validate ${FILE_HIC_tmp} >/dev/null 2>&1 || { echo "juicer pre produced an invalid .hic file"; exit 1; }
 echo "[$(date)] $NAME : juicer pre finished"
 
 #==============================================================
@@ -314,7 +323,7 @@ if [ "$FLAG_ICE" = "TRUE" ]; then
 				fi
 				echo "  ${RES}: re-calculating ICE2 bias from Raw/ALL.rds"
 				mkdir -p ${DIR_tmp}/ice_${RES}
-				Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_RES}/Raw/ALL.matrix -o ${DIR_tmp}/ice_${RES}/ALL.matrix --log ${DIR_tmp}/ice_${RES}/ALL.log --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_RES}/ICE2/ALL_bias.txt
+				Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_RES}/Raw/ALL.matrix -o ${DIR_tmp}/ice_${RES}/ALL.matrix --log ${DIR_tmp}/ice_${RES}/ALL.log --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_RES}/ICE2/ALL_bias.txt || { echo "ICE2 bias re-calculation failed for ${RES}"; exit 1; }
 			fi
 			BIAS_FILES=${DIR_RES}/ICE2/ALL_bias.txt
 		else
@@ -329,7 +338,7 @@ if [ "$FLAG_ICE" = "TRUE" ]; then
 					mkdir -p ${DIR_tmp}/ice_${RES}
 					INTER_OPT=""
 					[ -e ${DIR_RES}/InterBin/${CHR}.txt ] && INTER_OPT="--inter ${DIR_RES}/InterBin/${CHR}.txt"
-					Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_RES}/Raw/${CHR}.matrix -o ${DIR_tmp}/ice_${RES}/${CHR}.matrix --log ${DIR_tmp}/ice_${RES}/${CHR}.log ${INTER_OPT} --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_RES}/ICE2/${CHR}_bias.txt
+					Rscript --vanilla --no-echo ${DIR_LIB}/utils/Bias_normalization_ICE2.R -i ${DIR_RES}/Raw/${CHR}.matrix -o ${DIR_tmp}/ice_${RES}/${CHR}.matrix --log ${DIR_tmp}/ice_${RES}/${CHR}.log ${INTER_OPT} --times 30 --threshold ${THRESHOLD_ICE} --bias_out ${DIR_RES}/ICE2/${CHR}_bias.txt || { echo "ICE2 bias re-calculation failed for ${RES} ${CHR}"; exit 1; }
 				fi
 				[ -e ${DIR_RES}/ICE2/${CHR}_bias.txt ] && BIAS_FILES="${BIAS_FILES},${DIR_RES}/ICE2/${CHR}_bias.txt"
 			done
@@ -337,14 +346,13 @@ if [ "$FLAG_ICE" = "TRUE" ]; then
 		fi
 		[ ! -n "${BIAS_FILES}" ] && continue
 
-		Rscript --vanilla --no-echo ${DIR_LIB}/utils/Make_norm_vector.R -i ${BIAS_FILES} -o ${FILE_VECTOR} -l ${FILE_CHROM_SIZES} -r ${BP} -n ${ICE_NAME} -c ${CHRs_list}
+		Rscript --vanilla --no-echo ${DIR_LIB}/utils/Make_norm_vector.R -i ${BIAS_FILES} -o ${FILE_VECTOR} -l ${FILE_CHROM_SIZES} -r ${BP} -n ${ICE_NAME} -c ${CHRs_list} || { echo "Make_norm_vector.R failed for ${RES}"; exit 1; }
 		let N_ADDED=N_ADDED+1
 		echo "  ${RES}: ${ICE_NAME} vector prepared"
 	done
 
 	if [ ${N_ADDED} -gt 0 ]; then
-		java -Xmx${JAVA_MEM} -jar ${PROGRAM_JUICER} addNorm -j ${THREADS} ${FILE_HIC_tmp} ${FILE_VECTOR}
-		[ $? -ne 0 ] && echo "juicer addNorm failed" && exit 1
+		java -Xmx${JAVA_MEM} -jar ${PROGRAM_JUICER} addNorm -j ${THREADS} ${FILE_HIC_tmp} ${FILE_VECTOR} || { echo "juicer addNorm failed"; exit 1; }
 		echo "[$(date)] $NAME : ${ICE_NAME} normalization added for ${N_ADDED} resolution(s)"
 	else
 		echo "[$(date)] $NAME : no ICE bias available. ${ICE_NAME} normalization was not added"
