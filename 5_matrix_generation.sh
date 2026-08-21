@@ -169,6 +169,9 @@ done
 DIR_LIB=$(dirname $0)
 source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA DIR_OUT NAME CHR_include CHR_exclude RESOLUTION_string RESOLUTION FLAG_fragment FLAG_INTRA FLAG_NORM FLAG_RAW FLAG_blacklist THRESHOLD_SELF THRESHOLD_MAX_DISTANCE FLAG_dataframe THRESHOLD_ICE
 
+# fail early if the R in PATH cannot load the packages used by this stage
+bash ${DIR_LIB}/utils/check_R_packages.sh optparse data.table || exit 1
+
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${RESOLUTION}" ] && echo "Please specify resolution" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1

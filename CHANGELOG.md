@@ -20,7 +20,25 @@
 - `utils/load_argfile.sh`: argfile loader keeping command-line precedence.
 - `rfy_hic2.sh --env_check` also checks perl, DBD::SQLite and java.
 
+### Added (2.1.1)
+- `utils/check_R_packages.sh`: every stage now verifies that the `Rscript` in
+  PATH can load the packages it needs, and stops with a clear message
+  (which Rscript, which library paths) instead of producing empty or truncated
+  output files. A cluster `module load R` that hides the user library is the
+  typical cause.
+- `utils/Clean_sample_output.sh`: list (default) or delete the output of a
+  sample from a given stage onwards, so a stage can be re-run from a clean
+  state. Stage 2 output (alignment) is kept unless `--stage 2` is given.
+- `6_make_hic_file.sh` stops on the first failure (missing chromosomes, empty
+  short file, `pre` error, invalid .hic, bias/vector/addNorm failure) instead of
+  writing an incomplete `.hic`.
+- `utils/Verify_hic_file.R` reports why `juicer_tools dump` failed.
+
 ### Fixed
+- `utils/Bias_normalization_ICE2.R` wrote the matrix with `append=TRUE`, so a
+  leftover `ICE2/ALL.matrix` from an interrupted run was appended to instead of
+  replaced, silently producing a corrupt matrix. Now written with
+  `append=FALSE` (identical output in the normal case).
 - All stage scripts: the argfile given with `--arg` was never read when a
   stage script was called directly (inverted test). Stages now work both via
   `rfy_hic2.sh` and as individual jobs.

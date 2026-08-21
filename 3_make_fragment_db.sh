@@ -109,6 +109,9 @@ INPUT_FILES=$@
 #-----------------------------------------------
 source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA FILE_MAPs NAME MAPQ_THRESHOLD THRESHOLD_SELF FLAG_remove
 
+# fail early if the R in PATH cannot load the packages used by this stage
+bash ${DIR_LIB}/utils/check_R_packages.sh optparse RSQLite || exit 1
+
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_MAPs}" ] && echo "Please specify input map files" && exit 1
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1

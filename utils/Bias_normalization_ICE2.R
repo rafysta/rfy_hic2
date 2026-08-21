@@ -119,7 +119,8 @@ BIAS[index_remove] <- NA
 
 colnames(map) <- r
 rownames(map) <- r
-write.table(map, file=FILE_out, append=TRUE, quote=FALSE, sep="\t", eol="\n", row.names=TRUE, col.names=NA)
+# append=FALSE: a leftover file from an interrupted run must not be appended to
+write.table(map, file=FILE_out, append=FALSE, quote=FALSE, sep="\t", eol="\n", row.names=TRUE, col.names=NA)
 
 #------------------------------------------------
 # Output bias vector (for .hic normalization vector etc.)

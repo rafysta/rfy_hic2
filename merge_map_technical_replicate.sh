@@ -99,6 +99,9 @@ TIME_STAMP=$(date +"%Y-%m-%d")
 #-----------------------------------------------
 source ${DIR_LIB}/utils/load_argfile.sh FILE_IN DIR_DATA NAME THRESHOLD_SELF
 
+# fail early if the R in PATH cannot load the packages used by this stage
+bash ${DIR_LIB}/utils/check_R_packages.sh optparse RSQLite || exit 1
+
 [ ! -n "${NAME}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_IN}" ] && echo "Please specify map files for technical replicates for merging" && exit 1

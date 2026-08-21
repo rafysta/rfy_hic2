@@ -196,6 +196,9 @@ TIME_STAMP=$(date +"%Y-%m-%d_%H.%M.%S")
 #-----------------------------------------------
 source ${DIR_LIB}/utils/load_argfile.sh DIR_DATA NAME FILE_HIC RESOLUTIONs_hic HIC_NORM FLAG_ICE ICE_NAME THRESHOLD_ICE PROGRAM_JUICER JAVA_MEM THREADS CHR_include CHR_exclude THRESHOLD_SELF FLAG_blacklist DIR_tmporary FLAG_keep_short
 
+# fail early if the R in PATH cannot load the packages used by this stage
+bash ${DIR_LIB}/utils/check_R_packages.sh optparse data.table || exit 1
+
 [ ! -n "${NAME:-}" ] && echo "Please specify NAME" && exit 1
 [ ! -n "${DIR_DATA:-}" ] && echo "Please specify data directory" && exit 1
 [ ! -n "${FILE_CHROME_LENGTH:-}" ] && echo "Please specify FILE_CHROME_LENGTH (chromosome length file)" && exit 1
@@ -247,8 +250,6 @@ trap "rm -rf ${DIR_tmp}" 0
 #-----------------------------------------------
 # Load chromosome length
 #-----------------------------------------------
-# R packages used by this stage
-Rscript --vanilla --no-echo -e 'for(p in c("optparse","data.table")) if(!requireNamespace(p, quietly=TRUE)) stop("R package not found: ", p)' || { echo "Required R packages are missing for $(command -v Rscript). Check that the intended R (with optparse, data.table) is in PATH."; exit 1; }
 
 CHR_TABLE=$(Rscript --vanilla --no-echo ${DIR_LIB}/utils/Chromosome_length.R --in $FILE_CHROME_LENGTH --include $CHR_include --exclude $CHR_exclude) || { echo "Chromosome_length.R failed"; exit 1; }
 CHRs=($(echo $CHR_TABLE | xargs -n1 | awk 'NR==1' | tr ',' ' '))
