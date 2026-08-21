@@ -31,10 +31,19 @@ CHR1 <- as.character(opt["chr1"])
 CHR2 <- as.character(opt["chr2"]); if(CHR2 == "NA") CHR2 <- CHR1
 TOL <- as.numeric(as.character(opt["tolerance"]))
 
+if(!file.exists(FILE_hic)) stop(".hic file not found: ", FILE_hic)
+if(!file.exists(JUICER)) stop("juicer_tools jar not found: ", JUICER)
+if(!file.exists(FILE_rds)) stop("rds file not found: ", FILE_rds)
+if(Sys.which("java") == "") stop("java is not in PATH (module load java?)")
+
 FILE_dump <- tempfile(fileext=".txt")
-cmd <- sprintf("java -Xmx%s -jar %s dump observed %s %s %s %s BP %d %s", as.character(opt["java_mem"]), JUICER, NORM, FILE_hic, CHR1, CHR2, RES, FILE_dump)
-status <- system(cmd, ignore.stdout=TRUE, ignore.stderr=TRUE)
-if(status != 0) stop("juicer dump failed: ", cmd)
+cmd <- sprintf("java -Xmx%s -jar %s dump observed %s %s %s %s BP %d %s 2>&1", as.character(opt["java_mem"]), JUICER, NORM, FILE_hic, CHR1, CHR2, RES, FILE_dump)
+out <- system(cmd, intern=TRUE)
+status <- attr(out, "status"); if(is.null(status)) status <- 0
+if(status != 0 || !file.exists(FILE_dump) || file.info(FILE_dump)$size == 0){
+  cat("juicer dump output:\n", paste(grep("Picked up|WARN", out, value=TRUE, invert=TRUE), collapse="\n"), "\n", file=stderr())
+  stop("juicer dump failed (status ", status, "): ", cmd)
+}
 D <- read.table(FILE_dump, header=FALSE, sep="\t", col.names=c("pos1", "pos2", "score"))
 D <- D[!is.na(D$score), ]
 
