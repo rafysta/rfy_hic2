@@ -26,14 +26,15 @@ use Getopt::Std;
 use File::Temp qw(tempdir);
 
 if(@ARGV < 6 or $ARGV[0] eq '--help'){
-	die "Usage : $0 -i [fragment database] -o [output file (.gz allowed)] -c [comma separated chromosome list] -t [threshold of self ligation distance] [-b black list of fragment]\n";
+	die "Usage : $0 -i [fragment database] -o [output file (.gz allowed)] -c [comma separated chromosome list] -t [threshold of self ligation distance] [-b black list of fragment] [-l chromosome length file]\n";
 }
 
 my %opt;
-getopts("i:o:c:t:b:", \%opt);
+getopts("i:o:c:t:b:l:", \%opt);
 my $FILE_database = $opt{i};
 my $FILE_out = $opt{o};
 my $FILE_black = $opt{b};
+my $FILE_length = $opt{l};
 my $THRESHOLD_SELF = defined $opt{t} ? $opt{t} : 10000;
 my @chromosomes = split /,/, $opt{c};
 
@@ -45,6 +46,25 @@ use DBI;
 my %chrOrder;
 for(my $i = 0; $i < @chromosomes; $i++){
 	$chrOrder{$chromosomes[$i]} = $i;
+}
+
+#---------------------------------------
+# Read chromosome length (optional)
+#---------------------------------------
+# Used to reject garbled records whose coordinates fall outside the
+# chromosome. juicer_tools pre bins the genomic distance into an array sized
+# by the longest chromosome, so a single out-of-range position aborts the run
+# with ArrayIndexOutOfBoundsException in ExpectedValueCalculation.addDistance.
+my %chrLength;
+if(defined $FILE_length and -e $FILE_length){
+	my $fh_in = IO::File->new($FILE_length) or die "cannot open $FILE_length: $!";
+	while($_ = $fh_in->getline()){
+		s/\r?\n//;
+		my ($chr, $len) = split /\t/;
+		next unless(defined $len and $len =~ /^\d+$/);
+		$chrLength{$chr} = $len;
+	}
+	$fh_in->close();
 }
 
 #---------------------------------------
@@ -82,11 +102,32 @@ $sth_data->execute();
 
 my $count_pair = 0;
 my $count_out = 0;
+my $count_skip = 0;
 while(my $ref = $sth_data->fetchrow_arrayref()){
 	my ($chr1, $start1, $end1, $frag1, $chr2, $start2, $end2, $frag2, $score) = @$ref;
 
 	# only chromosomes in the list
 	next unless(exists $chrOrder{$chr1} and exists $chrOrder{$chr2});
+
+	# Skip malformed records. A few fragment databases contain garbled rows
+	# (shifted fields: non numeric or NULL coordinates, NULL fragment number,
+	# positions beyond the chromosome end). They must not reach juicer_tools.
+	unless(defined $start1 and $start1 =~ /^\d+$/ and defined $end1 and $end1 =~ /^\d+$/
+	   and defined $start2 and $start2 =~ /^\d+$/ and defined $end2 and $end2 =~ /^\d+$/
+	   and defined $frag1 and defined $frag2
+	   and defined $score and $score =~ /^\d+(\.\d+)?$/){
+		$count_skip++;
+		next;
+	}
+	if(%chrLength){
+		my $skip = 0;
+		$skip = 1 if(defined $chrLength{$chr1} and ($start1 > $chrLength{$chr1} or $end1 > $chrLength{$chr1}));
+		$skip = 1 if(defined $chrLength{$chr2} and ($start2 > $chrLength{$chr2} or $end2 > $chrLength{$chr2}));
+		if($skip){
+			$count_skip++;
+			next;
+		}
+	}
 
 	# Skip fragments in blacklist
 	next if(exists $Black{"$chr1\t$frag1"});
@@ -144,3 +185,4 @@ for(my $i = 0; $i < @chromosomes; $i++){
 $fh_out->close();
 
 print STDERR "fragment pairs used: $count_pair\nrecords written: $count_out\n";
+print STDERR "malformed records skipped: $count_skip\n" if($count_skip > 0);

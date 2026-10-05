@@ -270,9 +270,9 @@ echo "[$(date)] $NAME : chromosomes = ${CHRs_list}, resolutions = ${RESOLUTION_B
 #==============================================================
 FILE_SHORT=${DIR_tmp}/${NAME}.short.gz
 if [ "$FLAG_blacklist" = "TRUE" ]; then
-	perl ${DIR_LIB}/utils/Make_juicer_short_from_fragmentdb.pl -i ${DIR_DATA}/${NAME}_fragment.db -o ${FILE_SHORT} -c ${CHRs_list} -t ${THRESHOLD_SELF} -b ${DIR_DATA}/${NAME}_bad_fragment.txt
+	perl ${DIR_LIB}/utils/Make_juicer_short_from_fragmentdb.pl -i ${DIR_DATA}/${NAME}_fragment.db -o ${FILE_SHORT} -c ${CHRs_list} -t ${THRESHOLD_SELF} -l ${FILE_CHROM_SIZES} -b ${DIR_DATA}/${NAME}_bad_fragment.txt
 else
-	perl ${DIR_LIB}/utils/Make_juicer_short_from_fragmentdb.pl -i ${DIR_DATA}/${NAME}_fragment.db -o ${FILE_SHORT} -c ${CHRs_list} -t ${THRESHOLD_SELF}
+	perl ${DIR_LIB}/utils/Make_juicer_short_from_fragmentdb.pl -i ${DIR_DATA}/${NAME}_fragment.db -o ${FILE_SHORT} -c ${CHRs_list} -t ${THRESHOLD_SELF} -l ${FILE_CHROM_SIZES}
 fi
 [ $? -ne 0 ] && echo "conversion to short format failed" && exit 1
 N_RECORD=$(zcat ${FILE_SHORT} | head -n 1 | wc -l)
